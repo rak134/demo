@@ -1,37 +1,48 @@
+@Library('jenkins-lib') _  // Loads the shared library
+
 pipeline {
     agent { label 'Slave' }
+
     stages {
         stage("Checkout Code") {
             steps {
+                // Echoing the values for debugging purposes
+                echo "This is the URL from shared library: ${constants.gitUrl}"
+                echo "This is the password from shared library: ${constants.password}"
+
+                // Checkout code using the GitSCM plugin
                 checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: '*/main']],
-                        userRemoteConfigs: [[
-                                                    url: 'https://github.com/rak134/sampleapp.git',
-                                                    credentialsId: 'github-token'
-                                            ]]
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],  // Define the branch
+                    userRemoteConfigs: [[
+                        url: constants.gitUrl,  // Git URL from the shared library
+                        credentialsId: constants.password  // Credentials ID from the shared library
+                    ]]
                 ])
             }
         }
+
         stage("Build") {
             steps {
                 sh '''
-                mvn clean install
+                    mvn clean install  // Run Maven build
                 '''
             }
         }
+
         stage("Test") {
             steps {
                 sh '''
-                mvn test
+                    mvn test  // Run Maven tests
                 '''
             }
         }
+
         stage("Deploy To Artifactory") {
             steps {
                 configFileProvider([configFile(fileId: '8f023859-bc45-44cd-ae4a-e3462a3edcf3', variable: 'MAVEN_SETTINGS')]) {
                     sh '''
-                    mvn deploy -s $MAVEN_SETTINGS
+                        mvn deploy -s $MAVEN_SETTINGS  // Deploy with Maven using the settings file
                     '''
                 }
             }
