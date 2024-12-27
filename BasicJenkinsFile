@@ -1,5 +1,8 @@
 @Library('jenkins-lib') _  // Loads the shared library
 
+def mvnCommand = env.mvncommand ?: 'install'  // Maven command (default to install)
+def deployEnv = env.DeploymentEnvironment ?: 'staging'  // Deployment environment (default to staging)
+
 pipeline {
     agent { label 'Slave' }
 
@@ -25,7 +28,7 @@ pipeline {
         stage("Build") {
             steps {
                 sh '''
-                    mvn clean install  
+                    mvn clean ${mvnCommand}  
                 '''
             }
         }
@@ -45,6 +48,14 @@ pipeline {
                         mvn deploy -s $MAVEN_SETTINGS  
                     '''
                 }
+            }
+        }
+
+        stage("Deploy To Environment") {
+            steps {
+                sh '''
+                    echo "I am Deploying this war or application to ${deployEnv}"
+                '''
             }
         }
     }
