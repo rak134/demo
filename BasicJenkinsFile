@@ -53,9 +53,9 @@ pipeline {
 
         stage("Deploy To Environment") {
             steps {
-                sh '''
+                sh """
                     echo "I am Deploying this war or application to ${deployEnv}"
-                '''
+                """
             }
         }
     }
